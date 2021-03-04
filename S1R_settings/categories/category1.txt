@@ -1,0 +1,15 @@
+back
+backpack
+bag
+battery
+bean
+beer
+belly
+bone
+bottle
+bubble
+bus
+dinosaur
+dog
+ghost
+gum

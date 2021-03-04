@@ -1,0 +1,30 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 3.139107243121849 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "1" 
+        xmin = 0 
+        xmax = 3.139107243121849 
+        intervals: size = 4 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.5956262516236545 
+            text = "" 
+        intervals [2]:
+            xmin = 0.5956262516236545 
+            xmax = 0.667145612725817 
+            text = "" 
+        intervals [3]:
+            xmin = 0.667145612725817 
+            xmax = 1.0782327822311348 
+            text = "" 
+        intervals [4]:
+            xmin = 1.0782327822311348 
+            xmax = 3.139107243121849 
+            text = "" 

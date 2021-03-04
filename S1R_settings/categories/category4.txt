@@ -1,0 +1,15 @@
+camera
+carrot
+cool
+paint
+panda
+peanut
+pear
+pencil
+pepper
+tail
+tomato
+tongue
+tooth
+turkey
+turtle

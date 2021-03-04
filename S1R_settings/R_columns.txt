@@ -1,0 +1,11 @@
+Subject
+Group
+Item
+Vot Score
+Block
+Category
+Cond_race
+Cond_acce
+Extra
+Word Duration
+

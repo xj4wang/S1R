@@ -1,0 +1,16 @@
+ball
+banana
+basket
+bear
+bird
+bowl
+box
+boy
+deer
+desk
+door
+duck
+garden
+girl
+gold
+baby

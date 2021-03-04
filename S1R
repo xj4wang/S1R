@@ -1,0 +1,102 @@
+#!/bin/bash
+
+echo "~~~ Script S1R Start ~~~"
+echo 
+
+dir_list=dir_list
+R_columns="S1R_settings/R_columns.txt"
+R_results="R_results"
+ERROR_LOG="${R_results}/errors.log"
+
+touch $ERROR_LOG
+rm $ERROR_LOG
+
+ls -d -- */ > $dir_list
+sed -i '/^S1R_settings/d' $dir_list
+sed -i '1iALL FILES' $dir_list
+cat -n $dir_list
+
+# Get and check input to make sure it is valid
+LOWER=1
+UPPER=`wc -l $dir_list | cut -d " " -f 1`
+while [ true ]; do
+    printf "\nPlease select file(s) to run script on using the index number: "
+    read dir_num
+    
+    if ! [[ "$dir_num" =~ ^[0-9]+$ ]]; then
+        echo "This input $dir_num is not a number."
+    elif [ $dir_num -ge $LOWER ] && [ $dir_num -le $UPPER ]; then
+        dir_name=`sed "${dir_num}q;d" $dir_list`
+        echo "Script will now run on: $dir_name"
+        break
+    else
+        echo "The input $dir_num is not amoung the list of options."
+    fi
+done
+
+##################################################################
+###### Script to generate an R file for a given folder name ######
+##################################################################
+# note: dir_name is a global variable, funtion will cause mutations unless used with local
+generate_R () {
+    cur_R_results="${R_results}/${dir_name}"
+    mkdir $cur_R_results
+    
+    subject_list=subject_list
+    block_list=block_list
+    item_list=item_list
+    
+    echo $dir_name > temp
+    group=`cut -d "_" -f 2 temp`
+    rm temp
+
+    ls $dir_name > $subject_list
+    #$subject_dir_list | cut -d "_" -f 1 > $subject_list
+    
+    # for each subject
+    while read subject_line; do
+        subject=`echo $subject_line | cut -d "_" -f 1`
+        group=`echo $subject_line | cut -d "_" -f 3`
+        ls "${dir_name}/${subject_line}" > $block_list
+        
+        # Create 1 <subject>_R.csv file for each subject
+        sed -z 's/\n/,/g;s/,$/\n/' $R_columns > "${cur_R_results}/${subject}_R.csv"
+        
+        # for each block
+        while read block_line; do
+            block=`echo $block_line | cut -d "_" -f 2`
+            
+            ls "${dir_name}/${subject_line}/${block_line}" | sort > $item_list
+                        
+            # for each item
+            while read item_line; do
+                item=`echo $item_line | cut -d "." -f 1`
+                python VOT_score.py ${dir_name}${subject_line}/${block_line}/${item_line} > temp
+                VOT_score=`cat temp`
+                rm temp
+                
+                if [ $VOT_score == "TEXT_ERROR" ]; then
+                    echo "In folder ${subject_line}/${block_line}/${item_line}, the text value for interval 2 is incorrect." >> $ERROR_LOG
+                else
+                    echo ${subject},${group},${item},${VOT_score},${block} >> ${cur_R_results}/${subject}_R.csv
+                fi
+                
+            done < $item_list
+        done < $block_list
+    done < $subject_list
+}
+##################################################################
+
+if [ $dir_num == 1 ]; then
+    # Run on all folders listed in dir_list
+    generate_R
+else
+    # Run on selected folder
+    generate_R
+fi
+
+# Clear working files
+rm $dir_list $subject_list $block_list $item_list
+
+echo
+echo "~~~ Script S1R Done ~~~"
