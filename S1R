@@ -7,6 +7,12 @@ dir_list=dir_list
 R_columns="S1R_settings/R_columns.txt"
 R_results="R_results"
 ERROR_LOG="${R_results}/errors.log"
+categories_folder="S1R_settings/categories"
+
+NUM_GIVEN_COL=6 #number of set cols
+
+temp=`wc -l $R_columns | cut -d ' ' -f 1`
+python -c "print(',' * ($temp-$NUM_GIVEN_COL))" > temp_commas
 
 touch $ERROR_LOG
 rm $ERROR_LOG
@@ -71,14 +77,27 @@ generate_R () {
             # for each item
             while read item_line; do
                 item=`echo $item_line | cut -d "." -f 1`
+                
                 python VOT_score.py ${dir_name}${subject_line}/${block_line}/${item_line} > temp
                 VOT_score=`cat temp`
+                rm temp
+                
+                category=""
+                ls $categories_folder > temp
+                while read category_file; do
+                    if grep -Fxq "$item" ${categories_folder}/${category_file}
+                    then
+                        category=`echo $category_file | cut -d '_' -f 2 | cut -d '.' -f 1`
+                        break
+                    fi
+                done < temp
                 rm temp
                 
                 if [ $VOT_score == "TEXT_ERROR" ]; then
                     echo "In folder ${subject_line}/${block_line}/${item_line}, the text value for interval 2 is incorrect." >> $ERROR_LOG
                 else
-                    echo ${subject},${group},${item},${VOT_score},${block} >> ${cur_R_results}/${subject}_R.csv
+                    printf ${subject},${group},${item},${VOT_score},${block},${category} >> ${cur_R_results}/${subject}_R.csv
+                    cat temp_commas >> ${cur_R_results}/${subject}_R.csv
                 fi
                 
             done < $item_list
@@ -96,7 +115,7 @@ else
 fi
 
 # Clear working files
-rm $dir_list $subject_list $block_list $item_list
+rm $dir_list $subject_list $block_list $item_list temp_commas
 
 echo
 echo "~~~ Script S1R Done ~~~"
