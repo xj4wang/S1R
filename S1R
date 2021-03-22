@@ -4,6 +4,7 @@ echo "~~~ Script S1R Start ~~~"
 echo 
 
 dir_list=dir_list
+data_folder="data"
 R_columns="S1R_settings/R_columns.txt"
 R_results="R_results"
 ERROR_LOG="${R_results}/errors.log"
@@ -17,8 +18,7 @@ python -c "print(',' * ($temp-$NUM_GIVEN_COL))" > temp_commas
 touch $ERROR_LOG
 rm $ERROR_LOG
 
-ls -d -- */ > $dir_list
-sed -i '/^S1R_settings/d' $dir_list
+ls $data_folder > $dir_list
 sed -i '1iALL FILES' $dir_list
 cat -n $dir_list
 
@@ -56,14 +56,13 @@ generate_R () {
     group=`cut -d "_" -f 2 temp`
     rm temp
 
-    ls $dir_name > $subject_list
-    #$subject_dir_list | cut -d "_" -f 1 > $subject_list
+    ls ${data_folder}/${dir_name} > $subject_list
     
     # for each subject
     while read subject_line; do
         subject=`echo $subject_line | cut -d "_" -f 1`
         group=`echo $subject_line | cut -d "_" -f 3`
-        ls "${dir_name}/${subject_line}" > $block_list
+        ls "${data_folder}/${dir_name}/${subject_line}" > $block_list
         
         # Create 1 <subject>_R.csv file for each subject
         sed -z 's/\n/,/g;s/,$/\n/' $R_columns > "${cur_R_results}/${subject}_R.csv"
@@ -72,13 +71,13 @@ generate_R () {
         while read block_line; do
             block=`echo $block_line | cut -d "_" -f 2`
             
-            ls "${dir_name}/${subject_line}/${block_line}" | sort > $item_list
+            ls "${data_folder}/${dir_name}/${subject_line}/${block_line}" | sort > $item_list
                         
             # for each item
             while read item_line; do
                 item=`echo $item_line | cut -d "." -f 1`
                 
-                python VOT_score.py ${dir_name}${subject_line}/${block_line}/${item_line} > temp
+                python VOT_score.py ${data_folder}/${dir_name}/${subject_line}/${block_line}/${item_line} > temp
                 VOT_score=`cat temp`
                 rm temp
                 
@@ -108,7 +107,11 @@ generate_R () {
 
 if [ $dir_num == 1 ]; then
     # Run on all folders listed in dir_list
-    generate_R
+    sed -i '/^ALL FILES/d' $dir_list
+    while read dir_name; do
+        echo "Working through $dir_name ..."
+        generate_R
+    done < $dir_list
 else
     # Run on selected folder
     generate_R
