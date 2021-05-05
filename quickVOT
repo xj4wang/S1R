@@ -22,14 +22,15 @@ rm temp_score
 echo "Word" >> temp_name
 echo "VOT_Score" >> temp_score
 
+echo "Now working on..."
 while read file; do
-    
+    echo ${file}
     echo ${file} | cut -d '.' -f 1 >> temp_name
     python VOT_score.py ${data_folder}/${file} >> temp_score
                
 done < lst_of_files
 
-paste temp_name temp_score > quickVOT_results.txt
+paste -d ',' temp_name temp_score > quickVOT_results.csv
 
 ##################################################################
 
