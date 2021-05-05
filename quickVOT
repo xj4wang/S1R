@@ -1,0 +1,37 @@
+#!/bin/bash
+
+echo "~~~ Script quickVOT Start ~~~"
+echo 
+
+data_folder="quickVOT_data"
+ls $data_folder > lst_of_files
+#ERROR_LOG="${R_results}/errors.log"
+
+
+##################################################################
+###### Script to generate an R file for a given folder name ######
+##################################################################
+# note: dir_name is a global variable, funtion will cause mutations unless used with local
+
+touch temp_name
+rm temp_name
+
+touch temp_score
+rm temp_score
+
+while read file; do
+    
+    echo ${file} >> temp_name
+    python VOT_score.py ${data_folder}/${file} >> temp_score
+               
+done < lst_of_files
+
+paste temp_name temp_score > quickVOT_results.txt
+
+##################################################################
+
+# Clear working files
+rm lst_of_files temp_name temp_score
+
+echo
+echo "~~~ Script quickVOT Done ~~~"
