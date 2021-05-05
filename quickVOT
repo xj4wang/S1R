@@ -19,9 +19,12 @@ rm temp_name
 touch temp_score
 rm temp_score
 
+echo "Word" >> temp_name
+echo "VOT_Score" >> temp_score
+
 while read file; do
     
-    echo ${file} >> temp_name
+    echo ${file} | cut -d '.' -f 1 >> temp_name
     python VOT_score.py ${data_folder}/${file} >> temp_score
                
 done < lst_of_files
